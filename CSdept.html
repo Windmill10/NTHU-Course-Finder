@@ -1,0 +1,1962 @@
+<html><head>
+<title>Untitled Document</title>
+<meta http-equiv="Content-Type" content="text/html; charset=big5">
+<link href="/style/JH/JH.css" rel="stylesheet" type="text/css">
+</head>
+<body bgcolor="#FFFFFF" text="#000000" background="/img/back_3.jpg"><div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+<script type="text/javascript" language="JavaScript" src="/ccxplib/overlib.js"></script>
+
+
+<script language="javascript">
+
+	//到課程大綱的網頁
+	function syllabus(form, c_key){
+		window.open('../../../common/Syllabus/1.php?ACIXSTORE='+ form.ACIXSTORE.value+ '&c_key='+ c_key,'syllabus', 'toolbar=0,location=0,directories=0,status=0,menubar=0,resizable=1,scrollbars=1');
+	}
+
+	function toOpen(stu_no, sid){
+		window.open('JH761007.php'+ sid,'cList', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=700,height=460,resizable=1,scrollbars=1');
+	}
+
+	//點選加選的課程
+	function checks(form, a){
+
+		noerr = true;
+		form.ckey.value = a;
+
+		//若點選必選修，則要到總錄修課
+		if ((form.chks.value == '必選修')&&((d.substr(0,2) == 'YY')||(d.substr(0,2) == 'YZ'))){
+			alert("請到總錄選課!");
+			noerr = false;
+		}
+		else if ((form.chks.value == '總錄')&&(a.charAt(0) == 'Y')){
+			alert("請到總錄選課!");
+			noerr = false;
+		}
+		if (noerr){
+			form.chkbtn.value="add";
+			form.action="JH761005.php";
+			form.target="mainFrame";
+			form.submit();
+		}
+	}
+
+	//查詢關鍵字
+	function chkWord(form, chk){
+		if (form.keyword.value==''){
+			alert("請輸入關鍵字\n");
+		}
+		else {
+			form.toChk.value=chk;
+			form.action="JH761004.php";
+			form.target="_self";
+			form.submit();
+		}
+	}
+</script>
+
+
+	<style type="text/css">
+	table thead td{
+		font-weight:bold;
+		text-decoration : underline;
+		cursor:pointer;
+	}
+	/* If you wish to highlight current sortable column, add layout effects below */
+	.highlightedColumn{
+		background-color:#EEE;
+	}
+	</style>
+
+	<script type="text/javascript">
+	/************************************************************************************************************
+	(C) www.dhtmlgoodies.com, November 2005
+
+	This is a script from www.dhtmlgoodies.com. You will find this and a lot of other scripts at our website.
+
+	Terms of use:
+	You are free to use this script as long as the copyright message is kept intact. However, you may not
+	redistribute, sell or repost it without our permission.
+
+	Thank you!
+
+	www.dhtmlgoodies.com
+	Alf Magne Kalleland
+
+	************************************************************************************************************/
+
+	var tableWidget_okToSort = true;
+	var tableWidget_arraySort = new Array();
+	tableWidget_tableCounter = 1;
+	var activeColumn = new Array();
+
+	var currentColumn = false;
+	function sortNumeric(a,b){
+
+		a = a.replace(/,/,'.');
+		b = b.replace(/,/,'.');
+		a = a.replace(/[^\d\.\/]/g,'');
+		b = b.replace(/[^\d\.\/]/g,'');
+		if(a.indexOf('/')>=0)a = eval(a);
+		if(b.indexOf('/')>=0)b = eval(b);
+		return a/1 - b/1;
+	}
+
+
+	function sortString(a, b) {
+
+	  if ( a.toUpperCase() < b.toUpperCase() ) return -1;
+	  if ( a.toUpperCase() > b.toUpperCase() ) return 1;
+	  return 0;
+	}
+
+
+	function sortTable()
+	{
+      if(!tableWidget_okToSort)return;
+		tableWidget_okToSort = false;
+
+      var msg = window.open("","","height=130,width=230");
+      msg.document.write("<table align='center' style='background:white; height:100; width:200; border:2px solid #0099ff;'>");
+      msg.document.write("<tr><td align='center'><font color='#0000FF'><b>課程排序中 Sorting ...</b></font></td></tr></table>");
+
+		/* Getting index of current column */
+		var obj = this;
+		var indexThis = 0;
+		while(obj.previousSibling){
+			obj = obj.previousSibling;
+			if(obj.tagName=='TD')indexThis++;
+		}
+
+
+
+		if(this.getAttribute('direction') || this.direction){
+			direction = this.getAttribute('direction');
+			if(navigator.userAgent.indexOf('Opera')>=0)direction = this.direction;
+			if(direction=='ascending'){
+				direction = 'descending';
+				this.setAttribute('direction','descending');
+				this.direction = 'descending';
+			}else{
+				direction = 'ascending';
+				this.setAttribute('direction','ascending');
+				this.direction = 'ascending';
+			}
+		}else{
+			direction = 'ascending';
+			this.setAttribute('direction','ascending');
+			this.direction = 'ascending';
+		}
+
+		var tableObj = this.parentNode.parentNode.parentNode;
+		var tBody = tableObj.getElementsByTagName('TBODY')[0];
+
+		var widgetIndex = tableObj.getAttribute('tableIndex');
+		if(!widgetIndex)widgetIndex = tableObj.tableIndex;
+
+		if(currentColumn)currentColumn.className='';
+		document.getElementById('col' + widgetIndex + '_' + (indexThis+1)).className='highlightedColumn';
+		currentColumn = document.getElementById('col' + widgetIndex + '_' + (indexThis+1));
+
+
+
+		var sortMethod = tableWidget_arraySort[widgetIndex][indexThis]; // N = numeric, S = String
+		if(activeColumn[widgetIndex] && activeColumn[widgetIndex]!=this){
+			if(activeColumn[widgetIndex])activeColumn[widgetIndex].removeAttribute('direction');
+		}
+
+		activeColumn[widgetIndex] = this;
+
+		var cellArray = new Array();
+		var cellObjArray = new Array();
+		for(var no=1;no<tableObj.rows.length;no++){
+			var content= tableObj.rows[no].cells[indexThis].innerHTML+'';
+			cellArray.push(content);
+			cellObjArray.push(tableObj.rows[no].cells[indexThis]);
+		}
+
+		if(sortMethod=='N'){
+			cellArray = cellArray.sort(sortNumeric);
+		}else{
+			cellArray = cellArray.sort(sortString);
+		}
+
+		if(direction=='descending'){
+			for(var no=cellArray.length;no>=0;no--){
+				for(var no2=0;no2<cellObjArray.length;no2++){
+					if(cellObjArray[no2].innerHTML == cellArray[no] && !cellObjArray[no2].getAttribute('allreadySorted')){
+						cellObjArray[no2].setAttribute('allreadySorted','1');
+						tBody.appendChild(cellObjArray[no2].parentNode);
+					}
+				}
+			}
+		}else{
+			for(var no=0;no<cellArray.length;no++){
+				for(var no2=0;no2<cellObjArray.length;no2++){
+					if(cellObjArray[no2].innerHTML == cellArray[no] && !cellObjArray[no2].getAttribute('allreadySorted')){
+						cellObjArray[no2].setAttribute('allreadySorted','1');
+						tBody.appendChild(cellObjArray[no2].parentNode);
+					}
+				}
+			}
+		}
+
+		for(var no2=0;no2<cellObjArray.length;no2++){
+			cellObjArray[no2].removeAttribute('allreadySorted');
+		}
+
+		tableWidget_okToSort = true;
+		msg.close();
+	}
+	function initSortTable(objId,sortArray)
+	{
+		var obj = document.getElementById(objId);
+		obj.setAttribute('tableIndex',tableWidget_tableCounter);
+		obj.tableIndex = tableWidget_tableCounter;
+		tableWidget_arraySort[tableWidget_tableCounter] = sortArray;
+		var tHead = obj.getElementsByTagName('THEAD')[0];
+		var cells = tHead.getElementsByTagName('TD');
+		for(var no=0;no<cells.length;no++){
+			if(sortArray[no]){
+				cells[no].onclick = sortTable;
+			}else{
+				cells[no].style.cursor = 'default';
+			}
+		}
+		for(var no2=0;no2<sortArray.length;no2++){	/* Right align numeric cells */
+			if(sortArray[no2] && sortArray[no2]=='N')obj.rows[0].cells[no2].style.textAlign='right';
+		}
+
+		tableWidget_tableCounter++;
+	}
+	</script>
+
+
+<div align="center"><img src="templates/pic1.gif" width="351" height="30"></div>
+<form name="form1" method="post"><input type="hidden" name="ACIXSTORE" value="s5kh0k7c1r7uctrvgeg682s3g1">
+  <table width="100%" border="1" align="center" cellpadding="0" cellspacing="0">
+    <tbody><tr>
+      <td class="class2">學號姓名(Student ID, Name)：112062223 李聿宸</td>
+      <td class="class2">科系班別(Dept. &amp; Classes)：資工系一年級華班</td>
+    </tr>
+    <tr>
+    	<input type="hidden" name="toChk">
+      <td class="class2">總錄Dept.：
+        <select name="new_dept" onchange="this.form.toChk.value=&quot;1&quot;;this.form.action=&quot;JH761004.php&quot;;this.form.target=&quot;_self&quot;;this.form.submit();">
+                		<option value="AES ">分環所(AES )</option>
+                		<option value="AIIM">AI智造暨聯網產碩專班(AIIM)</option>
+                		<option value="AMEV">電動載具先進製造產碩(AMEV)</option>
+                		<option value="ANTH">人類所(ANTH)</option>
+                		<option value="ANTU">人類所與交大合作課程(ANTU)</option>
+                		<option value="ASTR">天文所(ASTR)</option>
+                		<option value="BAI ">智慧生醫博士學位學程(BAI )</option>
+                		<option value="BME ">醫工所(BME )</option>
+                		<option value="BMES">醫環系(BMES)</option>
+                		<option value="BT  ">生技(BT  )</option>
+                		<option value="CC  ">共同科目,體育,軍訓(CC  )</option>
+                		<option value="CD  ">資訊[1988以前](CD  )</option>
+                		<option value="CF  ">大學中文(CF  )</option>
+                		<option value="CFGE">共同教育委員會(CFGE)</option>
+                		<option value="CHE ">化工系(CHE )</option>
+                		<option value="CHEM">化學系(CHEM)</option>
+                		<option value="CHS ">人社院學士班(CHS )</option>
+                		<option value="CHSS">人社院(CHSS)</option>
+                		<option value="CICJ">民主法治領域(CICJ)</option>
+                		<option value="CL  ">中文系(CL  )</option>
+                		<option value="CLC ">華語中心(CLC )</option>
+                		<option value="CLU ">中文系與交大合作課程(CLU )</option>
+                		<option value="COM ">通訊所(COM )</option>
+                		<option value="COTM">科管院學士學位學程(COTM)</option>
+                		<option value="CS  " selected="">資工系(CS  )</option>
+                		<option value="CSR ">半導體研究學院(CSR )</option>
+                		<option value="CTM ">科管院(CTM )</option>
+                		<option value="DL  ">遠距課(同步/非同步)(DL  )</option>
+                		<option value="DMS ">醫科系(DMS )</option>
+                		<option value="E   ">工學院(E   )</option>
+                		<option value="EC  ">電資院(EC  )</option>
+                		<option value="ECON">經濟系(ECON)</option>
+                		<option value="EE  ">電機系(EE  )</option>
+                		<option value="EECS">電資院學士班(EECS)</option>
+                		<option value="EMBA">高階經營管理碩士專班(EMBA)</option>
+                		<option value="EMD ">EMBA雙聯學位學程(EMD )</option>
+                		<option value="EMIM">智慧製造高階在職專班(EMIM)</option>
+                		<option value="EMM ">EMBA亞太馬國境外專班(EMM )</option>
+                		<option value="EMS ">EMBA深圳境外專班(EMS )</option>
+                		<option value="ENE ">電子所(ENE )</option>
+                		<option value="ENGI">工學院學士班(ENGI)</option>
+                		<option value="ESS ">工科系(ESS )</option>
+                		<option value="EST ">環境博士學位學程(EST )</option>
+                		<option value="ESTU">環境博士學程與台聯大(ESTU)</option>
+                		<option value="FL  ">外語系(FL  )</option>
+                		<option value="FLU ">外語系與交大合作課程(FLU )</option>
+                		<option value="FMMI">流機暨材料與智檢產碩(FMMI)</option>
+                		<option value="GE  ">通識中心(GE  )</option>
+                		<option value="GEC ">通識核心(GEC )</option>
+                		<option value="GEU ">通識中心與交大合作課(GEU )</option>
+                		<option value="GLLB">學士後法律學士學位學(GLLB)</option>
+                		<option value="GOM ">全球營運管理碩士學程(GOM )</option>
+                		<option value="GPTS">台研教專班(GPTS)</option>
+                		<option value="HA  ">歷史思維領域(HA  )</option>
+                		<option value="HBA ">健康經管碩士在職專班(HBA )</option>
+                		<option value="HI  ">其他歷史課程(HI  )</option>
+                		<option value="HIS ">歷史所(HIS )</option>
+                		<option value="HSS ">人社院學士班(HSS )</option>
+                		<option value="HSSU">人社學士班與交大合作(HSSU)</option>
+                		<option value="IACS">亞際文化碩士學程(IACS)</option>
+                		<option value="IACU">亞際文化與台聯大合作(IACU)</option>
+                		<option value="IBP ">清華學院國際學士班(IBP )</option>
+                		<option value="ICMS">計科所(ICMS)</option>
+                		<option value="IE  ">工工[1998.6以前](IE  )</option>
+                		<option value="IEEM">工工系(IEEM)</option>
+                		<option value="IEM ">工工在職專班(IEM )</option>
+                		<option value="IIS ">資安所(IIS )</option>
+                		<option value="ILS ">學科所(106起查KLST)(ILS )</option>
+                		<option value="ILST">學科所(ILST)</option>
+                		<option value="IMBA">IMBA碩士班(IMBA)</option>
+                		<option value="IMCT">資通訊控制與熱流專班(IMCT)</option>
+                		<option value="IMIC">智慧資料中心產碩專班(IMIC)</option>
+                		<option value="IMIE">智生馬達電控產碩專班(IMIE)</option>
+                		<option value="IMII">AI製造與物聯網產碩班(IMII)</option>
+                		<option value="IMS ">跨院國際碩士學位(IMS )</option>
+                		<option value="IPE ">工學院學士班(IPE )</option>
+                		<option value="IPHD">跨院國際博士學位(IPHD)</option>
+                		<option value="IPIM">智慧生產製造產碩專班(IPIM)</option>
+                		<option value="IPMT">科管院學士班 (112起)(IPMT)</option>
+                		<option value="IPNS">原科院學士班(IPNS)</option>
+                		<option value="IPT ">光電所(IPT )</option>
+                		<option value="IPTH">清華學院學士班(IPTH)</option>
+                		<option value="ISA ">資應所(ISA )</option>
+                		<option value="ISS ">服科所(ISS )</option>
+                		<option value="JAC ">藝術學院(JAC )</option>
+                		<option value="JAD ">藝設系(JAD )</option>
+                		<option value="JADN">藝設系在職專班(JADN)</option>
+                		<option value="JANT">科技藝術研究所(JANT)</option>
+                		<option value="JARD">藝設專班(105下專用)(JARD)</option>
+                		<option value="JECE">幼教專班(105下專用)(JECE)</option>
+                		<option value="JECR">環文專班(105下專用)(JECR)</option>
+                		<option value="JELT">教科專班(105下專用)(JELT)</option>
+                		<option value="JEPC">心諮專班(105下專用)(JEPC)</option>
+                		<option value="JITA">藝術學院學士班(JITA)</option>
+                		<option value="JMEC">學前特教專班(105下專(JMEC)</option>
+                		<option value="JMSE">數理專班(105下專用)(JMSE)</option>
+                		<option value="JMU ">音樂系(JMU )</option>
+                		<option value="JMUN">音樂系在職專班(JMUN)</option>
+                		<option value="JMUS">音樂專班(105下專用)(JMUS)</option>
+                		<option value="JPHE">體育專班(105下專用)(JPHE)</option>
+                		<option value="KARD">藝設系(105下專用)(KARD)</option>
+                		<option value="KCAR">藝術學院(KCAR)</option>
+                		<option value="KCSN">學前特教在職專班(KCSN)</option>
+                		<option value="KEC ">環文系(KEC )</option>
+                		<option value="KECE">幼教系(105下專用)(KECE)</option>
+                		<option value="KECN">環文系在職專班(KECN)</option>
+                		<option value="KECR">環文系(105下專用)(KECR)</option>
+                		<option value="KEE ">幼教系(KEE )</option>
+                		<option value="KEEN">幼教系在職專班(KEEN)</option>
+                		<option value="KEL ">教科系(KEL )</option>
+                		<option value="KELN">教科系在職專班(KELN)</option>
+                		<option value="KELT">教科系(105下專用)(KELT)</option>
+                		<option value="KENI">英教系(KENI)</option>
+                		<option value="KEPC">心諮系(105下專用)(KEPC)</option>
+                		<option value="KES ">竹師教育學院博士班(KES )</option>
+                		<option value="KHCT">竹師教育學院(KHCT)</option>
+                		<option value="KIPE">竹師教育學院學士班(KIPE)</option>
+                		<option value="KLST">學科所(KLST)</option>
+                		<option value="KMS ">數理所(KMS )</option>
+                		<option value="KMSE">數理所(105下專用)(KMSE)</option>
+                		<option value="KMSN">數理所在職專班(KMSN)</option>
+                		<option value="KMUS">音樂系(105下專用)(KMUS)</option>
+                		<option value="KPC ">心諮系(KPC )</option>
+                		<option value="KPCN">心諮系在職專班(KPCN)</option>
+                		<option value="KPE ">體育系(KPE )</option>
+                		<option value="KPEN">體育系在職專班(KPEN)</option>
+                		<option value="KPHE">體育系(105下專用)(KPHE)</option>
+                		<option value="KSEN">STEAM碩士在職專班(KSEN)</option>
+                		<option value="KSN ">新加坡心諮碩專班(KSN )</option>
+                		<option value="KSPE">特教系(KSPE)</option>
+                		<option value="KSS ">運科系(KSS )</option>
+                		<option value="KSSN">運科系在職專班(KSSN)</option>
+                		<option value="KTLT">臺語所(KTLT)</option>
+                		<option value="KWEN">華德福碩士在職學程(KWEN)</option>
+                		<option value="LANG">英語教育中心(110起)(LANG)</option>
+                		<option value="LE  ">語文中心(LE  )</option>
+                		<option value="LING">語言所(LING)</option>
+                		<option value="LMIP">生醫學院學士班(112起(LMIP)</option>
+                		<option value="LS  ">生科系(LS  )</option>
+                		<option value="LSBI">生技產業博士學程(LSBI)</option>
+                		<option value="LSBS">生資所(LSBS)</option>
+                		<option value="LSBT">生技所(LSBT)</option>
+                		<option value="LSC ">生醫學院(LSC )</option>
+                		<option value="LSIN">神經科學博士學程(LSIN)</option>
+                		<option value="LSIP">生科院學士班(LSIP)</option>
+                		<option value="LSMC">分生所(LSMC)</option>
+                		<option value="LSMM">分醫所(LSMM)</option>
+                		<option value="LSSN">系神所(LSSN)</option>
+                		<option value="LST ">科法所(LST )</option>
+                		<option value="MATH">數學系(MATH)</option>
+                		<option value="MATU">數學系與陽明交大合作(MATU)</option>
+                		<option value="MBA ">MBA專班(MBA )</option>
+                		<option value="MCLC">華語文碩士學位學程(MCLC)</option>
+                		<option value="MEMS">微機電所(MEMS)</option>
+                		<option value="MFB ">財金碩士專班(MFB )</option>
+                		<option value="MI  ">國防教育課(MI  )</option>
+                		<option value="MPM ">公共政策與管理專班(MPM )</option>
+                		<option value="MS  ">材料系(MS  )</option>
+                		<option value="NE  ">核工[1995.6以前](NE  )</option>
+                		<option value="NEEP">核物[1997.6以前](NEEP)</option>
+                		<option value="NEMS">奈微所(NEMS)</option>
+                		<option value="NES ">核工所(NES )</option>
+                		<option value="NS  ">原科系(NS  )</option>
+                		<option value="NSIP">原科院學士班(NSIP)</option>
+                		<option value="NUCL">原科院(NUCL)</option>
+                		<option value="OET ">光電產業專班(OET )</option>
+                		<option value="PE  ">體育室(PE  )</option>
+                		<option value="PE1 ">大一體育(PE1 )</option>
+                		<option value="PE3 ">體育(校隊)(PE3 )</option>
+                		<option value="PFMI">前瞻產博學程(PFMI)</option>
+                		<option value="PHIL">哲學所(PHIL)</option>
+                		<option value="PHYS">物理系(PHYS)</option>
+                		<option value="PHYU">物理系與交大合作課程(PHYU)</option>
+                		<option value="PMBA">商管專班(PMBA)</option>
+                		<option value="PME ">動機系(PME )</option>
+                		<option value="PMED">精準醫療博士學位學程(PMED)</option>
+                		<option value="QF  ">計財系(QF  )</option>
+                		<option value="QTAM">量子科技博士學位學程(QTAM)</option>
+                		<option value="RADM">藥品醫材法規科學專班(RADM)</option>
+                		<option value="RB  ">輻生[1998.6以前](RB  )</option>
+                		<option value="RDDM">半導體元件及製程專班(RDDM)</option>
+                		<option value="RDIC">積體電路設計專班(RDIC)</option>
+                		<option value="RDPE">產業研發碩士電力電子(RDPE)</option>
+                		<option value="S   ">理學院(S   )</option>
+                		<option value="SCI ">理學院學士班(SCI )</option>
+                		<option value="SL  ">華文所(SL  )</option>
+                		<option value="SLS ">先進光源科技學位學程(SLS )</option>
+                		<option value="SNHC">社群人智國際學程(SNHC)</option>
+                		<option value="SOAN">社人[1998.6以前](SOAN)</option>
+                		<option value="SOC ">社會所(SOC )</option>
+                		<option value="ST  ">不分系清華學院學士班(ST  )</option>
+                		<option value="STAT">統計所(STAT)</option>
+                		<option value="STAU">統計所與陽明交大合作(STAU)</option>
+                		<option value="TE  ">師培中心(中等教程)(TE  )</option>
+                		<option value="TEE ">師培中心(國小教程)(TEE )</option>
+                		<option value="TEG ">師培中心(一般課程)(TEG )</option>
+                		<option value="TEX ">師培中心與竹教大合作(TEX )</option>
+                		<option value="THC ">清華學院(THC )</option>
+                		<option value="THSM">學士後醫學系(THSM)</option>
+                		<option value="TIGP">國際研究生學程(TIGP)</option>
+                		<option value="TL  ">台文所(TL  )</option>
+                		<option value="TM  ">科管所(TM  )</option>
+                		<option value="TMP ">科管所在職專班(TMP )</option>
+                		<option value="TSE ">台北政經學院(TSE )</option>
+                		<option value="UPMT">科管院學士班(UPMT)</option>
+                		<option value="UPPP">光電博士學程(UPPP)</option>
+                		<option value="UST ">台灣聯大(UST )</option>
+                		<option value="VA  ">合校過渡單位(VA  )</option>
+                		<option value="VELT">教科境外專班(VELT)</option>
+                		<option value="VGE ">南大校區原系統通識課(VGE )</option>
+                		<option value="VM  ">加退選後開設之微學分(VM  )</option>
+                		<option value="ZY  ">服務學習(ZY  )</option>
+                		<option value="ZZ  ">勞作服務(ZZ  )</option>
+                </select>
+        <input type="button" name="Submit" value="確定 GO" onclick="this.form.toChk.value=&quot;1&quot;;this.form.action=&quot;JH761004.php&quot;;this.form.target=&quot;_self&quot;;this.form.submit();">
+       </td>
+      <td class="class2">必選修(Required/Optional)：
+        <select name="new_class" onchange="this.form.toChk.value=&quot;2&quot;;this.form.action=&quot;JH761004.php&quot;;this.form.target=&quot;_self&quot;;this.form.submit();">
+                		<option value="AES 112M">AES 112M　分環所碩士班</option>
+                		<option value="AIIM112M">AIIM112M　AI智造暨聯網產碩專班</option>
+                		<option value="AMEV112M">AMEV112M　電動載具先進製造產碩專班</option>
+                		<option value="ANTH112D">ANTH112D　人類所博士班</option>
+                		<option value="ANTH112M">ANTH112M　人類所碩士班</option>
+                		<option value="ASTR112D">ASTR112D　天文所博士班</option>
+                		<option value="ASTR112M">ASTR112M　天文所碩士班</option>
+                		<option value="BAI 112D">BAI 112D　智慧生醫博士學程</option>
+                		<option value="BME 112D">BME 112D　醫工所博士班</option>
+                		<option value="BME 112M">BME 112M　醫工所碩士班</option>
+                		<option value="BMES109B">BMES109B　醫環系4年級</option>
+                		<option value="BMES110B">BMES110B　醫環系3年級</option>
+                		<option value="BMES111B">BMES111B　醫環系2年級</option>
+                		<option value="BMES112B">BMES112B　醫環系1年級</option>
+                		<option value="BMES112DA">BMES112DA　醫環系博士班一般組</option>
+                		<option value="BMES112DB">BMES112DB　醫環系博士班產業組</option>
+                		<option value="BMES112M">BMES112M　醫環系碩士班</option>
+                		<option value="CHE 109B">CHE 109B　化工系4年級</option>
+                		<option value="CHE 110B">CHE 110B　化工系3年級</option>
+                		<option value="CHE 111B">CHE 111B　化工系2年級</option>
+                		<option value="CHE 112B">CHE 112B　化工系1年級</option>
+                		<option value="CHE 112D">CHE 112D　化工系博士班</option>
+                		<option value="CHE 112M">CHE 112M　化工系碩士班</option>
+                		<option value="CHEM109B">CHEM109B　化學系4年級</option>
+                		<option value="CHEM110B">CHEM110B　化學系3年級</option>
+                		<option value="CHEM111B">CHEM111B　化學系2年級</option>
+                		<option value="CHEM112B">CHEM112B　化學系1年級</option>
+                		<option value="CHEM112D">CHEM112D　化學系博士班</option>
+                		<option value="CHEM112MA">CHEM112MA　化學系碩士班化學組</option>
+                		<option value="CHEM112MB">CHEM112MB　化學系碩士班應化組</option>
+                		<option value="CL  109B">CL  109B　中文系4年級</option>
+                		<option value="CL  110B">CL  110B　中文系3年級</option>
+                		<option value="CL  111B">CL  111B　中文系2年級</option>
+                		<option value="CL  112B">CL  112B　中文系1年級</option>
+                		<option value="CL  112D">CL  112D　中文系博士班</option>
+                		<option value="CL  112M">CL  112M　中文系碩士班</option>
+                		<option value="COM 112D">COM 112D　通訊所博士班</option>
+                		<option value="COM 112M">COM 112M　通訊所碩士班</option>
+                		<option value="CS  109BA">CS  109BA　資工系4年級清班</option>
+                		<option value="CS  109BB">CS  109BB　資工系4年級華班</option>
+                		<option value="CS  109BC">CS  109BC　資工系4年級梅班</option>
+                		<option value="CS  110BA">CS  110BA　資工系3年級清班</option>
+                		<option value="CS  110BB">CS  110BB　資工系3年級華班</option>
+                		<option value="CS  110BC">CS  110BC　資工系3年級梅班</option>
+                		<option value="CS  111BA">CS  111BA　資工系2年級清班</option>
+                		<option value="CS  111BB">CS  111BB　資工系2年級華班</option>
+                		<option value="CS  111BC">CS  111BC　資工系2年級梅班</option>
+                		<option value="CS  112BA">CS  112BA　資工系1年級清班</option>
+                		<option value="CS  112BB" selected="">CS  112BB　資工系1年級華班</option>
+                		<option value="CS  112BC">CS  112BC　資工系1年級梅班</option>
+                		<option value="CS  112D">CS  112D　資工系博士班</option>
+                		<option value="CS  112M">CS  112M　資工系碩士班</option>
+                		<option value="CSR 112D">CSR 112D　半導體博士班</option>
+                		<option value="CSR 112M">CSR 112M　半導體碩士班</option>
+                		<option value="DMS 109B">DMS 109B　醫科系4年級</option>
+                		<option value="DMS 110B">DMS 110B　醫科系3年級</option>
+                		<option value="DMS 111B">DMS 111B　醫科系2年級</option>
+                		<option value="DMS 112B">DMS 112B　醫科系1年級</option>
+                		<option value="ECON109BA">ECON109BA　經濟系4年級清班</option>
+                		<option value="ECON109BB">ECON109BB　經濟系4年級華班</option>
+                		<option value="ECON110BA">ECON110BA　經濟系3年級清班</option>
+                		<option value="ECON110BB">ECON110BB　經濟系3年級華班</option>
+                		<option value="ECON111BA">ECON111BA　經濟系2年級清班</option>
+                		<option value="ECON111BB">ECON111BB　經濟系2年級華班</option>
+                		<option value="ECON112BA">ECON112BA　經濟系1年級清班</option>
+                		<option value="ECON112BB">ECON112BB　經濟系1年級華班</option>
+                		<option value="ECON112D">ECON112D　經濟系博士班</option>
+                		<option value="ECON112M">ECON112M　經濟系碩士班</option>
+                		<option value="EE  109BA">EE  109BA　電機系4年級清班</option>
+                		<option value="EE  109BB">EE  109BB　電機系4年級華班</option>
+                		<option value="EE  110BA">EE  110BA　電機系3年級清班</option>
+                		<option value="EE  110BB">EE  110BB　電機系3年級華班</option>
+                		<option value="EE  111BA">EE  111BA　電機系2年級清班</option>
+                		<option value="EE  111BB">EE  111BB　電機系2年級華班</option>
+                		<option value="EE  112BA">EE  112BA　電機系1年級清班</option>
+                		<option value="EE  112BB">EE  112BB　電機系1年級華班</option>
+                		<option value="EE  112D">EE  112D　電機系博士班</option>
+                		<option value="EE  112M">EE  112M　電機系碩士班</option>
+                		<option value="EECS109B">EECS109B　電資院學士班4年級</option>
+                		<option value="EECS109BA">EECS109BA　電資班4年級國際學程</option>
+                		<option value="EECS110B">EECS110B　電資院學士班3年級</option>
+                		<option value="EECS110BA">EECS110BA　電資班3年級國際學程</option>
+                		<option value="EECS111B">EECS111B　電資院學士班2年級</option>
+                		<option value="EECS111BA">EECS111BA　電資班2年級國際學程</option>
+                		<option value="EECS112B">EECS112B　電資院學士班1年級</option>
+                		<option value="EECS112BA">EECS112BA　電資班1年級國際學程</option>
+                		<option value="EMBA112P">EMBA112P　高階經營管理碩士專班</option>
+                		<option value="EMD 112P">EMD 112P　EMBA雙聯</option>
+                		<option value="EMIM112P">EMIM112P　智慧製造高階學位學程</option>
+                		<option value="EMM 112P">EMM 112P　EMBA亞太馬國境外專班</option>
+                		<option value="EMS 112P">EMS 112P　EMBA深圳境外專班</option>
+                		<option value="ENE 112D">ENE 112D　電子所博士班</option>
+                		<option value="ENE 112M">ENE 112M　電子所碩士班</option>
+                		<option value="ESS 109BA">ESS 109BA　工科系4年級清班</option>
+                		<option value="ESS 109BB">ESS 109BB　工科系4年級華班</option>
+                		<option value="ESS 110BA">ESS 110BA　工科系3年級清班</option>
+                		<option value="ESS 110BB">ESS 110BB　工科系3年級華班</option>
+                		<option value="ESS 111BA">ESS 111BA　工科系2年級清班</option>
+                		<option value="ESS 111BB">ESS 111BB　工科系2年級華班</option>
+                		<option value="ESS 112BA">ESS 112BA　工科系1年級清班</option>
+                		<option value="ESS 112BB">ESS 112BB　工科系1年級華班</option>
+                		<option value="ESS 112D">ESS 112D　工科系博士班</option>
+                		<option value="ESS 112M">ESS 112M　工科系碩士班</option>
+                		<option value="EST 112D">EST 112D　環境博士學程</option>
+                		<option value="FL  109B">FL  109B　外語系4年級</option>
+                		<option value="FL  110B">FL  110B　外語系3年級</option>
+                		<option value="FL  111B">FL  111B　外語系2年級</option>
+                		<option value="FL  112B">FL  112B　外語系1年級</option>
+                		<option value="FL  112M">FL  112M　外語系碩士班</option>
+                		<option value="FMMI112M">FMMI112M　流機暨材料與智檢產碩專班</option>
+                		<option value="GOM 112M">GOM 112M　全球營運管理碩士學程</option>
+                		<option value="GPTS112P">GPTS112P　台研教學位班</option>
+                		<option value="HBA 112P">HBA 112P　健康經管專班</option>
+                		<option value="HIS 112D">HIS 112D　歷史所博士班</option>
+                		<option value="HIS 112M">HIS 112M　歷史所碩士班</option>
+                		<option value="HSS 109BA">HSS 109BA　人社院學士班4年級清班</option>
+                		<option value="HSS 109BB">HSS 109BB　人社院學士班4年級華班</option>
+                		<option value="HSS 110BA">HSS 110BA　人社院學士班3年級清班</option>
+                		<option value="HSS 110BB">HSS 110BB　人社院學士班3年級華班</option>
+                		<option value="HSS 111BA">HSS 111BA　人社院學士班2年級清班</option>
+                		<option value="HSS 111BB">HSS 111BB　人社院學士班2年級華班</option>
+                		<option value="HSS 112BA">HSS 112BA　人社院學士班1年級清班</option>
+                		<option value="HSS 112BB">HSS 112BB　人社院學士班1年級華班</option>
+                		<option value="IACS112M">IACS112M　亞際文化碩士學程</option>
+                		<option value="IBP 109BA">IBP 109BA　國際學士班4年級甲組</option>
+                		<option value="IBP 109BB">IBP 109BB　國際學士班4年級乙組</option>
+                		<option value="IBP 110BA">IBP 110BA　國際學士班3年級甲組</option>
+                		<option value="IBP 110BB">IBP 110BB　國際學士班3年級乙組</option>
+                		<option value="IBP 111BA">IBP 111BA　國際學士班2年級甲組</option>
+                		<option value="IBP 111BB">IBP 111BB　國際學士班2年級乙組</option>
+                		<option value="IBP 112BA">IBP 112BA　國際學士班1年級甲組</option>
+                		<option value="IBP 112BB">IBP 112BB　國際學士班1年級乙組</option>
+                		<option value="ICMS112M">ICMS112M　計科所碩士班</option>
+                		<option value="IEEM109B">IEEM109B　工工系4年級</option>
+                		<option value="IEEM110B">IEEM110B　工工系3年級</option>
+                		<option value="IEEM111B">IEEM111B　工工系2年級</option>
+                		<option value="IEEM112B">IEEM112B　工工系1年級</option>
+                		<option value="IEEM112D">IEEM112D　工工系博士班</option>
+                		<option value="IEEM112MA">IEEM112MA　工工系碩士班工工組</option>
+                		<option value="IEEM112MB">IEEM112MB　工工系碩士班工管組</option>
+                		<option value="IEM 112P">IEM 112P　工工在職專班</option>
+                		<option value="IEM 112PA">IEM 112PA　工工在職專班</option>
+                		<option value="IIS 112M">IIS 112M　資安所碩士班</option>
+                		<option value="IMBA112M">IMBA112M　IMBA碩士班</option>
+                		<option value="IMCT112M">IMCT112M　資通訊控制與熱流產碩專班</option>
+                		<option value="IMIC112M">IMIC112M　智慧資料中心產碩專班</option>
+                		<option value="IMS 112M">IMS 112M　跨院國際碩士</option>
+                		<option value="IMS 112MA">IMS 112MA　跨院國際碩士</option>
+                		<option value="IPE 110B">IPE 110B　工學院學士班3年級</option>
+                		<option value="IPE 112B">IPE 112B　工學院學士班1年級</option>
+                		<option value="IPHD112D">IPHD112D　跨院國際博士</option>
+                		<option value="IPHD112DA">IPHD112DA　跨院國際博士</option>
+                		<option value="IPHD112DB">IPHD112DB　跨院國際博士</option>
+                		<option value="IPMT109B">IPMT109B　科管院學士班4年級</option>
+                		<option value="IPMT109BA">IPMT109BA　管院班4年級國際學程</option>
+                		<option value="IPMT110B">IPMT110B　科管院學士班3年級</option>
+                		<option value="IPMT110BA">IPMT110BA　管院班3年級國際學程</option>
+                		<option value="IPMT111B">IPMT111B　科管院學士班2年級</option>
+                		<option value="IPMT111BA">IPMT111BA　管院班2年級國際學程</option>
+                		<option value="IPMT112B">IPMT112B　科管院學士班1年級</option>
+                		<option value="IPMT112BA">IPMT112BA　管院班1年級國際學程</option>
+                		<option value="IPNS109B">IPNS109B　原科院學士班4年級</option>
+                		<option value="IPNS110B">IPNS110B　原科院學士班3年級</option>
+                		<option value="IPNS111B">IPNS111B　原科院學士班2年級</option>
+                		<option value="IPNS112B">IPNS112B　原科院學士班1年級</option>
+                		<option value="IPT 112D">IPT 112D　光電所博士班</option>
+                		<option value="IPT 112M">IPT 112M　光電所碩士班</option>
+                		<option value="IPTH109BA">IPTH109BA　清華學院學士班4年級清班</option>
+                		<option value="IPTH109BB">IPTH109BB　清華學院學士班4年級華班</option>
+                		<option value="IPTH110BA">IPTH110BA　清華學院學士班3年級清班</option>
+                		<option value="IPTH110BB">IPTH110BB　清華學院學士班3年級華班</option>
+                		<option value="IPTH111BA">IPTH111BA　清華學院學士班2年級清班</option>
+                		<option value="IPTH111BB">IPTH111BB　清華學院學士班2年級華班</option>
+                		<option value="IPTH112BA">IPTH112BA　清華學院學士班1年級清班</option>
+                		<option value="IPTH112BB">IPTH112BB　清華學院學士班1年級華班</option>
+                		<option value="ISA 112D">ISA 112D　資應所博士班</option>
+                		<option value="ISA 112M">ISA 112M　資應所碩士班</option>
+                		<option value="ISS 112D">ISS 112D　服科所博士班</option>
+                		<option value="ISS 112M">ISS 112M　服科所碩士班</option>
+                		<option value="ITME112M">ITME112M　資通訊熱流電聲產碩專班</option>
+                		<option value="JAD 109BA">JAD 109BA　藝設系4年級創作組</option>
+                		<option value="JAD 109BB">JAD 109BB　藝設系4年級設計組</option>
+                		<option value="JAD 110BA">JAD 110BA　藝設系3年級創作組</option>
+                		<option value="JAD 110BB">JAD 110BB　藝設系3年級設計組</option>
+                		<option value="JAD 111BA">JAD 111BA　藝設系2年級創作組</option>
+                		<option value="JAD 111BB">JAD 111BB　藝設系2年級設計組</option>
+                		<option value="JAD 112BA">JAD 112BA　藝設系1年級創作組</option>
+                		<option value="JAD 112BB">JAD 112BB　藝設系1年級設計組</option>
+                		<option value="JAD 112M">JAD 112M　藝設系碩士班</option>
+                		<option value="JANT112M">JANT112M　科藝所碩士班</option>
+                		<option value="JITA109B">JITA109B　藝術學院學士班4年級</option>
+                		<option value="JITA110B">JITA110B　藝術學院學士班3年級</option>
+                		<option value="JITA111B">JITA111B　藝術學院學士班2年級</option>
+                		<option value="JITA112B">JITA112B　藝術學院學士班1年級</option>
+                		<option value="JMU 109B">JMU 109B　音樂系4年級</option>
+                		<option value="JMU 110B">JMU 110B　音樂系3年級</option>
+                		<option value="JMU 111B">JMU 111B　音樂系2年級</option>
+                		<option value="JMU 112B">JMU 112B　音樂系1年級</option>
+                		<option value="JMU 112M">JMU 112M　音樂系碩士班</option>
+                		<option value="JMUN112P">JMUN112P　音樂系在職專班</option>
+                		<option value="KCSN112P">KCSN112P　學前特教在職學位學程</option>
+                		<option value="KEC 112M">KEC 112M　環文系碩士班</option>
+                		<option value="KECN112P">KECN112P　環文系在職專班</option>
+                		<option value="KEE 109B">KEE 109B　幼教系4年級</option>
+                		<option value="KEE 110B">KEE 110B　幼教系3年級</option>
+                		<option value="KEE 111B">KEE 111B　幼教系2年級</option>
+                		<option value="KEE 112B">KEE 112B　幼教系1年級</option>
+                		<option value="KEE 112M">KEE 112M　幼教系碩士班</option>
+                		<option value="KEEN112P">KEEN112P　幼教系在職專班</option>
+                		<option value="KEL 109B">KEL 109B　教科系4年級</option>
+                		<option value="KEL 110B">KEL 110B　教科系3年級</option>
+                		<option value="KEL 111B">KEL 111B　教科系2年級</option>
+                		<option value="KEL 112B">KEL 112B　教科系1年級</option>
+                		<option value="KEL 112D">KEL 112D　教科系博士班</option>
+                		<option value="KEL 112MA">KEL 112MA　教科系碩士班課程組</option>
+                		<option value="KEL 112MB">KEL 112MB　教科系碩士班行政組</option>
+                		<option value="KELN112PA">KELN112PA　教科系課程與教學專班</option>
+                		<option value="KELN112PB">KELN112PB　教科系教育行政專班</option>
+                		<option value="KELN112PC">KELN112PC　教科系課程與教學專班</option>
+                		<option value="KENI109B">KENI109B　英教系4年級</option>
+                		<option value="KENI110B">KENI110B　英教系3年級</option>
+                		<option value="KENI111B">KENI111B　英教系2年級</option>
+                		<option value="KENI112B">KENI112B　英教系1年級</option>
+                		<option value="KENI112M">KENI112M　英教系碩士班</option>
+                		<option value="KES 112D">KES 112D　竹師教育學院博士班</option>
+                		<option value="KIPE109B">KIPE109B　教育學院學士班4年級</option>
+                		<option value="KIPE110B">KIPE110B　教育學院學士班3年級</option>
+                		<option value="KIPE111B">KIPE111B　教育學院學士班2年級</option>
+                		<option value="KIPE112B">KIPE112B　教育學院學士班1年級</option>
+                		<option value="KLST112M">KLST112M　學科所碩士班</option>
+                		<option value="KMS 112M">KMS 112M　數理所碩士班</option>
+                		<option value="KMSN112P">KMSN112P　數理所在職專班</option>
+                		<option value="KPC 109B">KPC 109B　心諮系4年級</option>
+                		<option value="KPC 110B">KPC 110B　心諮系3年級</option>
+                		<option value="KPC 111B">KPC 111B　心諮系2年級</option>
+                		<option value="KPC 112B">KPC 112B　心諮系1年級</option>
+                		<option value="KPC 112D">KPC 112D　心諮系博士班</option>
+                		<option value="KPC 112MA">KPC 112MA　心諮系碩士班</option>
+                		<option value="KPC 112MB">KPC 112MB　心諮系碩士班</option>
+                		<option value="KPCN112PA">KPCN112PA　心諮系在職專班輔導組</option>
+                		<option value="KPCN112PB">KPCN112PB　心諮系在職專班工商組</option>
+                		<option value="KSEN112P">KSEN112P　STEAM專班</option>
+                		<option value="KSN 112P">KSN 112P　新加坡心諮碩班境外專班</option>
+                		<option value="KSPE109B">KSPE109B　特教系4年級</option>
+                		<option value="KSPE110B">KSPE110B　特教系3年級</option>
+                		<option value="KSPE111B">KSPE111B　特教系2年級</option>
+                		<option value="KSPE112B">KSPE112B　特教系1年級</option>
+                		<option value="KSPE112M">KSPE112M　特教系碩士班</option>
+                		<option value="KSS 109B">KSS 109B　運科系4年級</option>
+                		<option value="KSS 110B">KSS 110B　運科系3年級</option>
+                		<option value="KSS 111B">KSS 111B　運科系2年級</option>
+                		<option value="KSS 112B">KSS 112B　運科系1年級</option>
+                		<option value="KSS 112M">KSS 112M　運科系碩士班</option>
+                		<option value="KSSN112P">KSSN112P　運科系在職專班</option>
+                		<option value="KTLT112D">KTLT112D　臺語所博士班</option>
+                		<option value="KTLT112M">KTLT112M　臺語所碩士班</option>
+                		<option value="KWEN112P">KWEN112P　華德福碩士學程</option>
+                		<option value="LING112D">LING112D　語言所博士班</option>
+                		<option value="LING112M">LING112M　語言所碩士班</option>
+                		<option value="LMIP109B">LMIP109B　生醫院學士班4年級</option>
+                		<option value="LMIP110B">LMIP110B　生醫院學士班3年級</option>
+                		<option value="LMIP111B">LMIP111B　生醫院學士班2年級</option>
+                		<option value="LMIP112B">LMIP112B　生醫院學士班1年級</option>
+                		<option value="LS  109B">LS  109B　生科系4年級</option>
+                		<option value="LS  110B">LS  110B　生科系3年級</option>
+                		<option value="LS  111B">LS  111B　生科系2年級</option>
+                		<option value="LS  112B">LS  112B　生科系1年級</option>
+                		<option value="LSBI112D">LSBI112D　生技博士學程</option>
+                		<option value="LSBS112D">LSBS112D　生資所博士班</option>
+                		<option value="LSBS112M">LSBS112M　生資所碩士班</option>
+                		<option value="LSBT112D">LSBT112D　生技所博士班</option>
+                		<option value="LSBT112M">LSBT112M　生技所碩士班</option>
+                		<option value="LSMC112D">LSMC112D　分生所博士班</option>
+                		<option value="LSMC112M">LSMC112M　分生所碩士班</option>
+                		<option value="LSMM112D">LSMM112D　分醫所博士班</option>
+                		<option value="LSMM112M">LSMM112M　分醫所碩士班</option>
+                		<option value="LSSN112D">LSSN112D　系神所博士班</option>
+                		<option value="LSSN112M">LSSN112M　系神所碩士班</option>
+                		<option value="LST 112D">LST 112D　科法所博士班</option>
+                		<option value="LST 112MA">LST 112MA　科法所碩士班</option>
+                		<option value="LST 112MB">LST 112MB　科法所碩士班</option>
+                		<option value="MATH109BA">MATH109BA　數學系4年級清班</option>
+                		<option value="MATH109BB">MATH109BB　數學系4年級華班</option>
+                		<option value="MATH110BA">MATH110BA　數學系3年級清班</option>
+                		<option value="MATH110BB">MATH110BB　數學系3年級華班</option>
+                		<option value="MATH111BA">MATH111BA　數學系2年級清班</option>
+                		<option value="MATH111BB">MATH111BB　數學系2年級華班</option>
+                		<option value="MATH112BA">MATH112BA　數學系1年級清班</option>
+                		<option value="MATH112BB">MATH112BB　數學系1年級華班</option>
+                		<option value="MATH112D">MATH112D　數學系博士班</option>
+                		<option value="MATH112MA">MATH112MA　數學系碩士班數學組</option>
+                		<option value="MATH112MB">MATH112MB　數學系碩士班應數組</option>
+                		<option value="MBA 112P">MBA 112P　經管在職專班</option>
+                		<option value="MBA 112PA">MBA 112PA　經管在職專班</option>
+                		<option value="MCLC112M">MCLC112M　華語文碩士學位學程</option>
+                		<option value="MFB 112P">MFB 112P　財金專班</option>
+                		<option value="MPM 112P">MPM 112P　公共政策與管理碩士專班</option>
+                		<option value="MS  109BA">MS  109BA　材料系4年級清班</option>
+                		<option value="MS  109BB">MS  109BB　材料系4年級華班</option>
+                		<option value="MS  110BA">MS  110BA　材料系3年級清班</option>
+                		<option value="MS  110BB">MS  110BB　材料系3年級華班</option>
+                		<option value="MS  111BA">MS  111BA　材料系2年級清班</option>
+                		<option value="MS  111BB">MS  111BB　材料系2年級華班</option>
+                		<option value="MS  112BA">MS  112BA　材料系1年級清班</option>
+                		<option value="MS  112BB">MS  112BB　材料系1年級華班</option>
+                		<option value="MS  112D">MS  112D　材料系博士班</option>
+                		<option value="MS  112M">MS  112M　材料系碩士班</option>
+                		<option value="NEMS112D">NEMS112D　奈微所博士班</option>
+                		<option value="NEMS112M">NEMS112M　奈微所碩士班</option>
+                		<option value="NES 112D">NES 112D　核工所博士班</option>
+                		<option value="NES 112M">NES 112M　核工所碩士班</option>
+                		<option value="PFMI112D">PFMI112D　前瞻產博學程</option>
+                		<option value="PHIL112D">PHIL112D　哲學所博士班</option>
+                		<option value="PHIL112M">PHIL112M　哲學所碩士班</option>
+                		<option value="PHYS109B A">PHYS109B A　物理系4年級物理組</option>
+                		<option value="PHYS109B B">PHYS109B B　物理系4年級光電組</option>
+                		<option value="PHYS109B C">PHYS109B C　物理系4年級天文組</option>
+                		<option value="PHYS110B A">PHYS110B A　物理系3年級物理組</option>
+                		<option value="PHYS110B B">PHYS110B B　物理系3年級光電組</option>
+                		<option value="PHYS110B C">PHYS110B C　物理系3年級天文組</option>
+                		<option value="PHYS111B A">PHYS111B A　物理系2年級物理組</option>
+                		<option value="PHYS111B B">PHYS111B B　物理系2年級光電組</option>
+                		<option value="PHYS111B C">PHYS111B C　物理系2年級天文組</option>
+                		<option value="PHYS112B A">PHYS112B A　物理系1年級物理組</option>
+                		<option value="PHYS112B B">PHYS112B B　物理系1年級光電組</option>
+                		<option value="PHYS112B C">PHYS112B C　物理系1年級天文組</option>
+                		<option value="PHYS112D">PHYS112D　物理系博士班</option>
+                		<option value="PHYS112MA">PHYS112MA　物理系物理組碩士班</option>
+                		<option value="PHYS112MB">PHYS112MB　物理系應物組碩士班</option>
+                		<option value="PHYS112MC">PHYS112MC　物理系光物組碩士班</option>
+                		<option value="PME 109BA">PME 109BA　動機系4年級清班</option>
+                		<option value="PME 109BB">PME 109BB　動機系4年級華班</option>
+                		<option value="PME 110BA">PME 110BA　動機系3年級清班</option>
+                		<option value="PME 110BB">PME 110BB　動機系3年級華班</option>
+                		<option value="PME 111BA">PME 111BA　動機系2年級清班</option>
+                		<option value="PME 111BB">PME 111BB　動機系2年級華班</option>
+                		<option value="PME 112BA">PME 112BA　動機系1年級清班</option>
+                		<option value="PME 112BB">PME 112BB　動機系1年級華班</option>
+                		<option value="PME 112D">PME 112D　動機系博士班</option>
+                		<option value="PME 112M">PME 112M　動機系碩士班</option>
+                		<option value="PMED112D">PMED112D　精準醫療博士學程</option>
+                		<option value="QF  109B">QF  109B　計財系4年級</option>
+                		<option value="QF  110B">QF  110B　計財系3年級</option>
+                		<option value="QF  111B">QF  111B　計財系2年級</option>
+                		<option value="QF  112B">QF  112B　計財系1年級</option>
+                		<option value="QF  112D">QF  112D　計財系博士班</option>
+                		<option value="QF  112MA">QF  112MA　計財系碩士班</option>
+                		<option value="QF  112MB">QF  112MB　計財系碩士班</option>
+                		<option value="QTAM112D">QTAM112D　量子科技博士學位學程</option>
+                		<option value="RADM112P">RADM112P　藥品醫材法規科學專班</option>
+                		<option value="SCI 110B">SCI 110B　理學院學士班3年級</option>
+                		<option value="SCI 111B">SCI 111B　理學院學士班2年級</option>
+                		<option value="SCI 112B">SCI 112B　理學院學士班1年級</option>
+                		<option value="SL  112M">SL  112M　華文所碩士班</option>
+                		<option value="SLS 112DA">SLS 112DA　先進光源博士學程物理組</option>
+                		<option value="SLS 112DB">SLS 112DB　先進光源博士學程工科組</option>
+                		<option value="SLS 112MA">SLS 112MA　先進光源碩士學程物理組</option>
+                		<option value="SLS 112MB">SLS 112MB　先進光源碩士學程工科組</option>
+                		<option value="SNHC112D">SNHC112D　社群人智國際學程</option>
+                		<option value="SOC 112D">SOC 112D　社會所博士班</option>
+                		<option value="SOC 112M">SOC 112M　社會所碩士班</option>
+                		<option value="STAT112D">STAT112D　統計所博士班</option>
+                		<option value="STAT112M">STAT112M　統計所碩士班</option>
+                		<option value="THSM111X">THSM111X　醫學系</option>
+                		<option value="THSM112X">THSM112X　醫學系</option>
+                		<option value="TL  112D">TL  112D　台文所博士班</option>
+                		<option value="TL  112M">TL  112M　台文所碩士班</option>
+                		<option value="TM  112D">TM  112D　科管所博士班</option>
+                		<option value="TM  112DA">TM  112DA　科管所博士班產業組</option>
+                		<option value="TM  112M">TM  112M　科管所碩士班</option>
+                		<option value="TSE 112M">TSE 112M　台北政經學院政治經濟碩士班</option>
+                </select>
+        <input type="button" name="Submit2" value="確定 GO" onclick="this.form.toChk.value=&quot;2&quot;;this.form.action=&quot;JH761004.php&quot;;this.form.target=&quot;_self&quot;;this.form.submit();">
+        </td>
+    </tr>
+    <tr>
+    <td colspan="2">關鍵字(keyword)：<input type="text" name="keyword" size="10">
+    	<input type="button" name="Submit2" value="課名關鍵字查詢" class="word" onclick="chkWord(this.form, &quot;3&quot;);">
+    	<input type="button" name="Submit2" value="教師關鍵字查詢" class="word" onclick="chkWord(this.form, &quot;4&quot;);">
+      <input type="button" name="Submit2" value="English Course Title Key Word" class="word" onclick="chkWord(this.form, &quot;5&quot;);">
+    </td>
+    </tr>
+    <tr><td colspan="2">
+    <input type="button" name="Submit2" value="查詢某時段有哪些課Courses in particular time" class="word" onclick="this.form.action=&quot;JH761006.php&quot;;this.form.target=&quot;_self&quot;;this.form.submit();">
+    <input type="button" name="Submit2" value="寄預排表給導師 Mail to your advisor." class="word" onclick="toOpen(&quot;112062223&quot;, &quot;?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1&quot;);">
+    </td></tr>
+  </tbody></table>
+  <br><b>點選欄位標題可進行正/反向排序Hit the column title to resort</b><br>
+  <table id="T1" width="100%" border="1" cellspacing="0" cellpadding="0" class="class3" tableindex="1">
+  <!--
+	id of <col> tags should be "col" + index of table(1 = first table, 2 = second table) + _ (underscore) + column index(1.2.3.4...)
+	-->
+   <colgroup>
+		<col id="col1_1">
+		<col id="col1_2">
+		<col id="col1_3">
+		<col id="col1_4">
+		<col id="col1_5">
+		<col id="col1_6">
+		<col id="col1_7">
+		<col id="col1_8">
+		<col id="col1_9">
+		<col id="col1_10">
+	</colgroup>
+	<thead>
+     <tr class="class2">
+        <td width="5%" nowrap="" style="text-decoration: none; cursor: default;"><div align="center">加入Add
+        <input type="hidden" name="chks" value="code"></div></td>
+        <td width="12%"><div align="center">科號Course Number</div></td>
+        <td width="20%"><div align="center">科目名稱Course Title</div></td>
+        <td width="3%"><div align="center">學分Credit</div></td>
+        <td width="5%"><div align="center"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">時間Time</a></div></td>
+        <td width="8%"><div align="center"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">
+        教室Room</a></div></td>
+        <td width="5%"><div align="center">教師Professor</div></td>
+        <td width="3%"><div align="center"><font size="-2">必選修Required/Optional</font></div></td>
+        <td width="3%"><div align="center">人限Size limit</div></td>
+        <td width="3%"><div align="center"><a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">對象Object</a></div></td>
+        <td width="15%" style="text-decoration: none; cursor: default;"><div align="center">限制Limit</div></td>
+        <td width="6%" style="text-decoration: none; cursor: default;"><div align="center">大綱Syllabus</div></td>
+   	</tr>
+   </thead>
+   <tbody>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  125000&quot;);"></td>
+      	<td class="word">11220CS  125000</td>
+      	<td class="word">資料結構導論<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M5M6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;韓永楷</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;120</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;排除電資院
+                  <br>16週課程。面授+非同步遠距。排除電資院學生。需有C++或Python程式背景。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  125000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  135500&quot;);"></td>
+      	<td class="word">11220CS  135500</td>
+      	<td class="word">計算機程式設計一<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> TaTbTc<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;陳煥宗</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;300</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>16週課程。RaRbRc上機教室在資電326、328、323、132，面授+同步遠距教學。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  135500');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  135601&quot;);"></td>
+      	<td class="word">11220CS  135601</td>
+      	<td class="word">計算機程式設計二－英語授課<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T5T6F5F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;郭柏志</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;【上學期原修計算機程式設計一CS  135501(胡敏君老師)同學選課優先,第3次選課起開放】
+                  <br>16週課程。本課程上150分鐘，其餘時間由教授視情況彈性運用。T56在資電323、326、328、132電腦教室上課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  135601');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  135602&quot;);"></td>
+      	<td class="word">11220CS  135602</td>
+      	<td class="word">計算機程式設計二<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T5T6F5F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達107<br></a></td>
+      	<td class="word">&nbsp;楊舜仁</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;【上學期原修計算機程式設計一CS  135502(楊舜仁老師)同學選課優先,第3次選課起開放】
+                  <br>16週課程。本課程上150分鐘，其餘時間由教授視情況彈性運用。F56在資電323、326、328、132電腦教室上課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  135602');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  135800&quot;);"></td>
+      	<td class="word">11220CS  135800</td>
+      	<td class="word">Python語言程式入門<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M2W3W4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達108<br></a></td>
+      	<td class="word">&nbsp;周百祥</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;150</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;電資院優先，第3次選課起開放全校修習
+                  <br>16週課程。面授+同步+非同步遠距。W3W4上機教室為資電323、326、328、132。                  <br><a href="../../../6/6.2/6.2.6/JH626002.php?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">擋修</a>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  135800');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  150100&quot;);"></td>
+      	<td class="word">11220CS  150100</td>
+      	<td class="word">英語聽講－英語授課<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W7W8W9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;郭詩芝</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;35</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限資工系
+                  <br>16週課程。不可加簽。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  150100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  210000&quot;);"></td>
+      	<td class="word">11220CS  210000</td>
+      	<td class="word">電路與電子學一<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T5T6F5F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;邱瀞德</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系優先，第3次選課起開放全校修習
+                  <br>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  210000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  235100&quot;);"></td>
+      	<td class="word">11220CS  235100</td>
+      	<td class="word">資料結構－英語授課<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M3M4W2<br>MaMb<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達107<br>DELTA台達107<br></a></td>
+      	<td class="word">&nbsp;陳宜欣</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;300</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級,電資院學士班大學部2年級優先，第3次選課起開放全校修習
+                  <br>16週課程。台達104、105、107教室同步轉播。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  235100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  241001&quot;);"></td>
+      	<td class="word">11220CS  241001</td>
+      	<td class="word">軟體設計與實驗<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> R7R8<br>T7T8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 326<br>DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;吳尚鴻</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級,電資院學士班大學部2年級優先，第3次選課起開放全校修習
+                  <br>R7R8在資電326、328電腦教室上課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  241001');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  241002&quot;);"></td>
+      	<td class="word">11220CS  241002</td>
+      	<td class="word">軟體設計與實驗<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> R7R8<br>T7T8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br>EECS資電 326<br></a></td>
+      	<td class="word">&nbsp;朱宏國</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級,電資院學士班大學部2年級優先，第3次選課起開放全校修習
+                  <br>16週課程。T7T8在資電326、328電腦教室上課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  241002');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  333201&quot;);"></td>
+      	<td class="word">11220CS  333201</td>
+      	<td class="word">機率<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4F4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達104<br></a></td>
+      	<td class="word">&nbsp;許秋婷</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級,電資院學士班大學部2年級優先，第3次選課起開放全校修習
+                  <br>16週課程。                  <br><a href="../../../6/6.2/6.2.6/JH626002.php?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">擋修</a>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  333201');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  333202&quot;);"></td>
+      	<td class="word">11220CS  333202</td>
+      	<td class="word">機率<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4F3F4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;李端興</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級,電資院學士班大學部2年級優先，第3次選課起開放全校修習
+                  <br>16週課程。本課程上150分鐘，其餘時間由教授視情況彈性運用。                  <br><a href="../../../6/6.2/6.2.6/JH626002.php?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">擋修</a>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  333202');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  337100&quot;);"></td>
+      	<td class="word">11220CS  337100</td>
+      	<td class="word">正規語言<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M3M4W2<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達103<br></a></td>
+      	<td class="word">&nbsp;蔡明哲</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  337100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  340400&quot;);"></td>
+      	<td class="word">11220CS  340400</td>
+      	<td class="word">編譯器設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8R7<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達107<br></a></td>
+      	<td class="word">&nbsp;李政崑</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  340400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  342300&quot;);"></td>
+      	<td class="word">11220CS  342300</td>
+      	<td class="word">作業系統<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3T4R4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達108<br></a></td>
+      	<td class="word">&nbsp;黃能富</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部3年級優先，第3次選課起開放全校修習
+                  <br>16週課程。本課程上150分鐘，其餘時間由教授視情況彈性運用。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  342300');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  342400&quot;);"></td>
+      	<td class="word">11220CS  342400</td>
+      	<td class="word">基礎高效能計算叢集電腦實務<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> WaWbWc<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;周志遠</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;20</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級優先，第3次選課起開放全校修習
+                  <br>X-Class，16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  342400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  343400&quot;);"></td>
+      	<td class="word">11220CS  343400</td>
+      	<td class="word">競技程式設計二<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> MaMbMc<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;黃兆源</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;50</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系優先，第3次選課起開放全校修習
+                  <br>16週課程。MaMbMc上機教室：資電326、328。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  343400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  357000&quot;);"></td>
+      	<td class="word">11220CS  357000</td>
+      	<td class="word">多媒體技術概論<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T5F5F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達104<br></a></td>
+      	<td class="word">&nbsp;賴尚宏</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  357000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  390100&quot;);"></td>
+      	<td class="word">11220CS  390100</td>
+      	<td class="word">系統整合實作一<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"></a></td>
+      	<td class="word">&nbsp;指導教授</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限資工系大學部
+                  <br>此課屬本系大學部專題,限本系大學部學生修課並採加簽選課,相關規定見網頁說明https://reurl.cc/Q4v6Ap
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  390100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  390200&quot;);"></td>
+      	<td class="word">11220CS  390200</td>
+      	<td class="word">系統整合實作二<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"></a></td>
+      	<td class="word">&nbsp;指導教授</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限資工系大學部
+                  <br>此課屬本系大學部專題,限本系大學部學生修課並採加簽選課,相關規定見網頁說明https://reurl.cc/Q4v6Ap                  <br><a href="../../../6/6.2/6.2.6/JH626002.php?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">擋修</a>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  390200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  410001&quot;);"></td>
+      	<td class="word">11220CS  410001</td>
+      	<td class="word">計算機結構<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3T4R3<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;王廷基</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級優先，第3次選課起開放全校修習
+                  <br>17週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  410001');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  410002&quot;);"></td>
+      	<td class="word">11220CS  410002</td>
+      	<td class="word">計算機結構<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3T4R3<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達103<br></a></td>
+      	<td class="word">&nbsp;黃稚存</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部2年級優先，第3次選課起開放全校修習
+                  <br>17週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  410002');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  411100&quot;);"></td>
+      	<td class="word">11220CS  411100</td>
+      	<td class="word">平行計算概論<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T6T7T8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;李濬屹</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;20</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>16週課程。不可加簽。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  411100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  431100&quot;);"></td>
+      	<td class="word">11220CS  431100</td>
+      	<td class="word">計算方法設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4F3<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;盧錦隆</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部3年級優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  431100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  446100&quot;);"></td>
+      	<td class="word">11220CS  446100</td>
+      	<td class="word">軟體工程<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M5M6R5<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達105<br></a></td>
+      	<td class="word">&nbsp;黃慶育</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  446100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  471000&quot;);"></td>
+      	<td class="word">11220CS  471000</td>
+      	<td class="word">資料庫系統概論<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M7M8R6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達103<br></a></td>
+      	<td class="word">&nbsp;吳尚鴻</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系大學部優先，第3次選課起開放全校修習
+                  <br>上課方式：課堂教學+遠距輔助教學。                  <br><a href="../../../6/6.2/6.2.6/JH626002.php?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">擋修</a>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  471000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  512000&quot;);"></td>
+      	<td class="word">11220CS  512000</td>
+      	<td class="word">超大型積體電路系統設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8R7R8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;黃稚存</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>17週課程。上機教室：資電132。欲加簽者務必填寫表單：https://reurl.cc/Nyx4Mp
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  512000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  515400&quot;);"></td>
+      	<td class="word">11220CS  515400</td>
+      	<td class="word">硬體安全<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> F5F6F7<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;陳聿廣</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;60</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  515400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  526200&quot;);"></td>
+      	<td class="word">11220CS  526200</td>
+      	<td class="word">多媒體網路與系統－英語授課<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4F4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;徐正炘</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;25</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。先修科目CS3570 Introduction to Multimedia and EECS3020 Introduction to Computer Networks
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  526200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  529100&quot;);"></td>
+      	<td class="word">11220CS  529100</td>
+      	<td class="word">網路之隨機程序<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8R7<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達104<br></a></td>
+      	<td class="word">&nbsp;高榮駿</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;40</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  529100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  532200&quot;);"></td>
+      	<td class="word">11220CS  532200</td>
+      	<td class="word">高等計算生物學<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M6M7M8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;盧錦隆</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課，同時需修過CS531300計算生物學方可加簽。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  532200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  533100&quot;);"></td>
+      	<td class="word">11220CS  533100</td>
+      	<td class="word">排隊理論<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8F5<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 125<br></a></td>
+      	<td class="word">&nbsp;林華君</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  533100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  534100&quot;);"></td>
+      	<td class="word">11220CS  534100</td>
+      	<td class="word">高等賽局理論與應用<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T6T7T8T9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達103<br></a></td>
+      	<td class="word">&nbsp;張隆紋</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;75</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限電資院,碩士班博士班
+                  <br>16週課程。本課程上150分鐘，其餘時間由教授視情況彈性運用。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  534100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  536300&quot;);"></td>
+      	<td class="word">11220CS  536300</td>
+      	<td class="word">區塊鏈的技術與應用<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3T4R4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達104<br></a></td>
+      	<td class="word">&nbsp;蔡仁松</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系碩士班博士班優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  536300');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  540300&quot;);"></td>
+      	<td class="word">11220CS  540300</td>
+      	<td class="word">高等程式語言<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M6M7M8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達108<br></a></td>
+      	<td class="word">&nbsp;李政崑</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;15</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  540300');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  542500&quot;);"></td>
+      	<td class="word">11220CS  542500</td>
+      	<td class="word">即時系統設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W7W8F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 128<br></a></td>
+      	<td class="word">&nbsp;石維寬</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  542500');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  542600&quot;);"></td>
+      	<td class="word">11220CS  542600</td>
+      	<td class="word">分散式系統設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> R7R8R9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;周志遠</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;20</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  542600');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  550000&quot;);"></td>
+      	<td class="word">11220CS  550000</td>
+      	<td class="word">計算機圖學<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> WaWbWc<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達107<br></a></td>
+      	<td class="word">&nbsp;李潤容</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;150</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;資工系碩士班博士班,資安所碩士班博士班,資應所碩士班博士班優先，第3次選課起開放全校修習
+                  <br>16週課程。不可加簽。修課人限已達教室座位最大容量，已無任何加簽的空間。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  550000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  551100&quot;);"></td>
+      	<td class="word">11220CS  551100</td>
+      	<td class="word">虛擬實境<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> R7R8R9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;胡敏君</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  551100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  555200&quot;);"></td>
+      	<td class="word">11220CS  555200</td>
+      	<td class="word">偏鄉智慧醫療專題實作<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> F5F6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;唐傳義<br>林沿妊<br>林文綺<br>葉肩宇</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;服科所碩士班3年級4年級,資工系碩士班3年級4年級優先，第3次選課起開放全校修習
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  555200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  560400&quot;);"></td>
+      	<td class="word">11220CS  560400</td>
+      	<td class="word">人工智慧與藝術導論－英語授課<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T5T6T7<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 224<br></a></td>
+      	<td class="word">&nbsp;吳中浩</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp; </td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  560400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  561200&quot;);"></td>
+      	<td class="word">11220CS  561200</td>
+      	<td class="word">演化計算<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M7M8M9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;丁川康</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。先修科目:Programming
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  561200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  562000&quot;);"></td>
+      	<td class="word">11220CS  562000</td>
+      	<td class="word">機器導航與探索<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> MaMbMc<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;胡敏君</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;40</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  562000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  565700&quot;);"></td>
+      	<td class="word">11220CS  565700</td>
+      	<td class="word">深度增強式學習<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T2T3T4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達106<br></a></td>
+      	<td class="word">&nbsp;李濬屹</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。先修課程：深度學習、機器學習。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  565700');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  565800&quot;);"></td>
+      	<td class="word">11220CS  565800</td>
+      	<td class="word">機器學習於異常偵測之應用<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3R3R4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達102<br></a></td>
+      	<td class="word">&nbsp;賴尚宏</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;30</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  565800');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  570100&quot;);"></td>
+      	<td class="word">11220CS  570100</td>
+      	<td class="word">資料科學<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8T9<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達109<br></a></td>
+      	<td class="word">&nbsp;沈之涯</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;40</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。上課方式：課堂教學+遠距輔助教學。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  570100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  580200&quot;);"></td>
+      	<td class="word">11220CS  580200</td>
+      	<td class="word">研究方法二<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"></a></td>
+      	<td class="word">&nbsp;指導教授</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp; </td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限資工系
+                  <br>尚未找到指導教授者請勿選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  580200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  591000&quot;);"></td>
+      	<td class="word">11220CS  591000</td>
+      	<td class="word">書報討論<br><br>
+      	</td>
+      	<td class="word">1</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W5W6<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達107<br></a></td>
+      	<td class="word">&nbsp;徐正炘<br>沈之涯</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;200</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;限資工系碩士班1年級
+                  <br>台達105、107同步轉播。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  591000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  631100&quot;);"></td>
+      	<td class="word">11220CS  631100</td>
+      	<td class="word">計算幾何<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T3T4R3<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 125<br></a></td>
+      	<td class="word">&nbsp;王炳豐</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;20</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>先修課程：data structures, algorithms；修課學生須於開學第一周email 學分證明給授課老師，才能繼續修課
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  631100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  631200&quot;);"></td>
+      	<td class="word">11220CS  631200</td>
+      	<td class="word">平行計算方法設計<br><br>
+      	</td>
+      	<td class="word">3</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4F3<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 125<br></a></td>
+      	<td class="word">&nbsp;王炳豐</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;20</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>先修課程：algorithms；修課學生須於開學第一周email 學分證明給授課老師，才能繼續修課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  631200');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  690000&quot;);"></td>
+      	<td class="word">11220CS  690000</td>
+      	<td class="word">論文研究<br><br>
+      	</td>
+      	<td class="word">0</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"></a></td>
+      	<td class="word">&nbsp;指導教授</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp; </td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;排除資工系碩士班1年級
+                  <br>限資工系碩二以上修習
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  690000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  713000&quot;);"></td>
+      	<td class="word">11220CS  713000</td>
+      	<td class="word">設計自動化專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W7W8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 129<br></a></td>
+      	<td class="word">&nbsp;麥偉基</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  713000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  725300&quot;);"></td>
+      	<td class="word">11220CS  725300</td>
+      	<td class="word">網路系統之理論與實作專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> RaRb<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達615<br></a></td>
+      	<td class="word">&nbsp;高榮駿</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  725300');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  735300&quot;);"></td>
+      	<td class="word">11220CS  735300</td>
+      	<td class="word">網路安全專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 128<br></a></td>
+      	<td class="word">&nbsp;孫宏民</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  735300');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  742900&quot;);"></td>
+      	<td class="word">11220CS  742900</td>
+      	<td class="word">嵌入式系統設計專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> M1M2<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 129<br></a></td>
+      	<td class="word">&nbsp;石維寬</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  742900');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  746100&quot;);"></td>
+      	<td class="word">11220CS  746100</td>
+      	<td class="word">軟體工程專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> R3R4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 129<br></a></td>
+      	<td class="word">&nbsp;黃慶育</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  746100');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  760400&quot;);"></td>
+      	<td class="word">11220CS  760400</td>
+      	<td class="word">邊緣智慧專題<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> T7T8<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">EECS資電 129<br></a></td>
+      	<td class="word">&nbsp;邱德泉</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  760400');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  771000&quot;);"></td>
+      	<td class="word">11220CS  771000</td>
+      	<td class="word">資料庫系統專題一<br><br>
+      	</td>
+      	<td class="word">2</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> W3W4<br></a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');">DELTA台達613<br></a></td>
+      	<td class="word">&nbsp;陳宜欣</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp;0</td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;
+                  <br>16週課程。以加簽方式選課。
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  771000');"></td>
+      	</tr>
+            	<tr>
+      	<td><input type="button" name="Submit5" value="加ADD" class="btn" onclick="checks(this.form, &quot;11220CS  890000&quot;);"></td>
+      	<td class="word">11220CS  890000</td>
+      	<td class="word">論文研究<br><br>
+      	</td>
+      	<td class="word">0</td>
+      	<td class="word"><a href="../../../common/TIMECODE.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word"><a href="https://curricul.site.nthu.edu.tw/p/406-1208-50862,r8507.php?Lang=zh-tw" target="newone" onclick="window.open('#','newone', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"></a></td>
+      	<td class="word">&nbsp;指導教授</td>
+      	<td class="word">&nbsp;</td>
+      	<td class="word">&nbsp; </td>
+      	<td class="word">&nbsp;<a href="../../../common/limits.htm?ACIXSTORE=s5kh0k7c1r7uctrvgeg682s3g1" target="newtwo" onclick="window.open('#','newtwo', 'toolbar=0,location=0,directories=0,status=0,menubar=0,width=300,height=400,resizable=1,scrollbars=1');"> </a></td>
+      	<td class="word">
+            &nbsp;排除博士班1年級
+                  <br>限資工博二以上修習
+         </td>
+      	<td class="word"><input type="button" name="Submit6" value="Syllabus" class="btn" onclick="syllabus(this.form, '11220CS  890000');"></td>
+      	</tr>
+
+      <input type="hidden" name="ckey">
+      <input type="hidden" name="chkbtn">
+   </tbody>
+  </table>
+
+<script type="text/javascript">
+  initSortTable('T1',Array('','S','S','S','S','S','S','S','S','S'));
+</script>
+
+  </form>
+
+
+</body></html>
