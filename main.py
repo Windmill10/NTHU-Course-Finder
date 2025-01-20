@@ -28,15 +28,21 @@ class Course:
         self.no_extra_selection = 不可加簽說明
         self.required_optional_note = 必選修說明
 
-courses = []
-try:
-    with open("course_data.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-        for course_data in data:
-            course = Course(*course_data.values())
-            courses.append(course)
-except FileNotFoundError:
-    download_data.download_course_data()
+@st.cache_data(ttl=24*60*60)  # Cache for 24 hours
+def load_course_data():
+    try:
+        with open("course_data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return [Course(**course) for course in data]
+    except FileNotFoundError:
+        st.warning("找不到課程資料，請先下載")
+        if download_data.download_course_data():
+            with open("course_data.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return [Course(**course) for course in data]
+        return []
+
+courses = load_course_data()
 
 st.title("NTHU Course Explorer")
 
