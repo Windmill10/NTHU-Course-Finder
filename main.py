@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from typing import List
 import json
+import download_data
 class Course:
     def __init__(self, 科號: str, 課程中文名稱: str, 課程英文名稱: str, 學分數: str, 人限: str,
                  新生保留人數: str, 通識對象: str, 通識類別: str, 授課語言: str, 備註: str,
@@ -27,28 +28,18 @@ class Course:
         self.no_extra_selection = 不可加簽說明
         self.required_optional_note = 必選修說明
 
-# Fetch data
-url: str = 'https://www.ccxp.nthu.edu.tw/ccxp/INQUIRE/JH/OPENDATA/open_course_data.json'
+courses = []
 try:
-    response: requests.Response = requests.get(url)
-    response.encoding = 'utf-8'  # Set proper encoding for Chinese characters
-    courses_data: List[dict] = response.json()
-    
-    print("Courses data first item:", json.dumps(courses_data[0], indent=2, ensure_ascii=False))
-    
-    
-    courses: List[Course] = [Course(**course) for course in courses_data]
-except requests.RequestException as e:
-    st.error(f"無法取得課程資料: {str(e)}")
-    courses = []
-except json.JSONDecodeError as e:
-    st.error(f"解析課程資料時發生錯誤: {str(e)}")
-    courses = []
+    with open("course_data.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+        for course_data in data:
+            course = Course(*course_data.values())
+            courses.append(course)
+except FileNotFoundError:
+    download_data.download_course_data()
 
-# App Title
 st.title("NTHU Course Explorer")
 
-# Custom CSS
 st.markdown("""
 <style>
     .card {
