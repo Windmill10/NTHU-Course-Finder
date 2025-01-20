@@ -138,7 +138,7 @@ else:
                         {ge_tag}
                         <strong>課程代號:</strong> {course.id} | <strong>學分:</strong> {course.credit} | <strong>教師:</strong> {course.teacher.split()[0]}
                     </div>
-                    <strong>教室與時間:</strong> {course.class_room_and_time}
+                    <strong>教室與時間:</strong> {" | ".join(course.class_room_and_time.split())}
                 """,
                 unsafe_allow_html=True
             )
