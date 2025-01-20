@@ -1,37 +1,49 @@
 import streamlit as st
 import requests
 from typing import List
-
+import json
 class Course:
-    def __init__(self, id: str, chinese_title: str, english_title: str, credit: str, size_limit: str, 
-                 freshman_reservation: str, object: str, ge_type: str, language: str, note: str, 
-                 suspend: str, class_room_and_time: str, teacher: str, prerequisite: str, limit_note: str, 
-                 expertise: str, program: str, no_extra_selection: str, required_optional_note: str):
-        self.id = id
-        self.chinese_title = chinese_title
-        self.english_title = english_title
-        self.credit = credit
-        self.size_limit = size_limit
-        self.freshman_reservation = freshman_reservation
-        self.object = object
-        self.ge_type = ge_type
-        self.language = language
-        self.note = note
-        self.suspend = suspend
-        self.class_room_and_time = class_room_and_time
-        self.teacher = teacher
-        self.prerequisite = prerequisite
-        self.limit_note = limit_note
-        self.expertise = expertise
-        self.program = program
-        self.no_extra_selection = no_extra_selection
-        self.required_optional_note = required_optional_note
+    def __init__(self, 科號: str, 課程中文名稱: str, 課程英文名稱: str, 學分數: str, 人限: str,
+                 新生保留人數: str, 通識對象: str, 通識類別: str, 授課語言: str, 備註: str,
+                 停開註記: str, 教室與上課時間: str, 授課教師: str, 擋修說明: str, 課程限制說明: str,
+                 第一二專長對應: str, 學分學程對應: str, 不可加簽說明: str, 必選修說明: str):
+        self.id = 科號
+        self.chinese_title = 課程中文名稱
+        self.english_title = 課程英文名稱
+        self.credit = 學分數
+        self.size_limit = 人限
+        self.freshman_reservation = 新生保留人數
+        self.object = 通識對象
+        self.ge_type = 通識類別
+        self.language = 授課語言
+        self.note = 備註
+        self.suspend = 停開註記
+        self.class_room_and_time = 教室與上課時間
+        self.teacher = 授課教師
+        self.prerequisite = 擋修說明
+        self.limit_note = 課程限制說明
+        self.expertise = 第一二專長對應
+        self.program = 學分學程對應
+        self.no_extra_selection = 不可加簽說明
+        self.required_optional_note = 必選修說明
 
 # Fetch data
-url: str = 'https://api.nthusa.tw/courses'
-response: requests.Response = requests.get(url)
-courses_data: List[dict] = response.json()
-courses: List[Course] = [Course(**course) for course in courses_data]
+url: str = 'https://www.ccxp.nthu.edu.tw/ccxp/INQUIRE/JH/OPENDATA/open_course_data.json'
+try:
+    response: requests.Response = requests.get(url)
+    response.encoding = 'utf-8'  # Set proper encoding for Chinese characters
+    courses_data: List[dict] = response.json()
+    
+    print("Courses data first item:", json.dumps(courses_data[0], indent=2, ensure_ascii=False))
+    
+    
+    courses: List[Course] = [Course(**course) for course in courses_data]
+except requests.RequestException as e:
+    st.error(f"無法取得課程資料: {str(e)}")
+    courses = []
+except json.JSONDecodeError as e:
+    st.error(f"解析課程資料時發生錯誤: {str(e)}")
+    courses = []
 
 # App Title
 st.title("NTHU Course Explorer")
@@ -81,7 +93,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.sidebar.header("篩選條件")
-filter_options = st.sidebar.multiselect("篩選條件:", ["課程代號", "課名", "時間", "教師名稱"], placeholder="")
+filter_options = st.sidebar.multiselect(
+    "篩選條件:", 
+    ["課程代號", "課名", "時間", "教師名稱"],
+    default=["課名", "時間"],
+    placeholder="選擇篩選條件"
+)
 additional_enrollment = st.sidebar.checkbox("允許加簽")
 show_all = st.sidebar.checkbox("顯示所有課程", value=False)
 
