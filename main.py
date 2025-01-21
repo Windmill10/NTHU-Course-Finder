@@ -118,11 +118,15 @@ if "課名" in filter_options:
     chinese_title = st.sidebar.text_input("輸入課名 (中文)", placeholder="如: 資料結構")
     if chinese_title:
         filtered_courses = [course for course in filtered_courses if chinese_title in course.chinese_title]
-
+        
 if "時間" in filter_options:
-    time = st.sidebar.text_input("輸入時間:", placeholder="如: M1M2M3")
-    if time:
-        filtered_courses = [course for course in filtered_courses if time in course.class_room_and_time]
+    time_input = st.sidebar.text_input("輸入時間:", placeholder="如: M1M2M3, R6R7").strip()
+    if time_input:
+        time_slots = [t.strip().upper() for t in time_input.replace(",", " ").split()]
+        filtered_courses = [
+            course for course in filtered_courses 
+            if any(time in course.class_room_and_time.upper() for time in time_slots)
+        ]
 
 if "教師名稱" in filter_options:
     teacher = st.sidebar.text_input("輸入教師名稱:", placeholder="如: 姜諧潾")
